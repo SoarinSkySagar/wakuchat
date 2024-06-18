@@ -1,4 +1,4 @@
-import { Providers } from "@/context/AllProviderContext";
+import { Providers } from "@/context/Context";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
