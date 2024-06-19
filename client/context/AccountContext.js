@@ -68,11 +68,16 @@ export function AccountProvider({children}) {
         try {
             if (contract && connectedAccount) {
                 const account = await contract.methods.accountExists(connectedAccount).call()
+                console.log('account existence retrieved')
                 return account
             } else {
+                console.log('error on 1st catch block')
+                console.log(contract)
+                console.log(connectedAccount)
                 return null
             }
         } catch {
+            console.log('error on 2nd catch block')
             return null
         }
     }
