@@ -15,6 +15,7 @@ import {
     Center
 } from "@chakra-ui/react";
 import { MdOutlineFileUpload } from "react-icons/md";
+import { generateImageUrl } from '@/utils/generateImageUrl';
 
 const defaultProfilePicture = '/default-pfp.png'; // Ensure this path is correct and accessible from your public folder
 
@@ -34,6 +35,12 @@ export default function CreateAccountModal({ onClose }) {
     const triggerFileInput = () => {
         document.getElementById('profilePictureInput').click();
     };
+
+    const submitData = async () => {
+        const imageHash = await generateImageUrl(profilePicture);
+        console.log(imageHash)
+        onClose()
+    }
 
     return (
         <ModalOverlay>
@@ -110,7 +117,7 @@ export default function CreateAccountModal({ onClose }) {
 
                 </ModalBody>
                 <ModalFooter style={{ justifyContent: 'center' }}>
-                    <Button colorScheme='blue' onClick={onClose}>Submit</Button>
+                    <Button colorScheme='blue' onClick={submitData}>Submit</Button>
                 </ModalFooter>
             </ModalContent>
         </ModalOverlay>
