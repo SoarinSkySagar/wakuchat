@@ -40,7 +40,7 @@ export default function ConnectButton() {
     
         return (
             <div>
-                <Modal isOpen={isOpen} onClose={onClose}>
+                <Modal isOpen={isOpen} onClose={onClose} closeOnOverlayClick={false} closeOnEsc={false}>
                     <CreateAccountModal onClose={onClose} />
                 </Modal>
                 {account 
