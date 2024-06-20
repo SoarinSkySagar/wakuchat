@@ -15,9 +15,8 @@ import {
     Center
 } from "@chakra-ui/react";
 import { MdOutlineFileUpload } from "react-icons/md";
-import { generateImageUrl } from '@/utils/generateImageUrl';
 
-const defaultProfilePicture = '/default-pfp.png'; // Ensure this path is correct and accessible from your public folder
+const defaultProfilePicture = '/default-pfp.png';
 
 export default function CreateAccountModal({ onClose }) {
     const [profilePicture, setProfilePicture] = useState(defaultProfilePicture);
@@ -27,8 +26,13 @@ export default function CreateAccountModal({ onClose }) {
     const handleProfilePictureChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const newProfilePicture = URL.createObjectURL(file);
-            setProfilePicture(newProfilePicture);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result;
+                console.log(base64String);  // Log the base64 string
+                setProfilePicture(base64String);  // Base64 string
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -37,9 +41,21 @@ export default function CreateAccountModal({ onClose }) {
     };
 
     const submitData = async () => {
-        const imageHash = await generateImageUrl(profilePicture);
-        console.log(imageHash)
-        onClose()
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ base64Image: profilePicture }),
+            });
+            const data = await response.json();
+            console.log('IPFS Hash:', data.ipfsHash);
+            // Handle success
+        } catch (error) {
+            console.error('Error submitting data:', error);
+            // Handle error
+        }
     }
 
     return (
@@ -114,7 +130,6 @@ export default function CreateAccountModal({ onClose }) {
                         resize="none"
                         className='mb-3'
                     />
-
                 </ModalBody>
                 <ModalFooter style={{ justifyContent: 'center' }}>
                     <Button colorScheme='blue' onClick={submitData}>Submit</Button>
