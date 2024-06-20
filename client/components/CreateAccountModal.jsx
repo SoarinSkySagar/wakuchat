@@ -12,25 +12,34 @@ import {
     Image,
     Box,
     Flex,
-    Center
+    Center,
+    useToast
 } from "@chakra-ui/react";
 import { MdOutlineFileUpload } from "react-icons/md";
+import axios from 'axios';
+import { useAccount } from '@/context/AccountContext';
 
 const defaultProfilePicture = '/default-pfp.png';
 
 export default function CreateAccountModal({ onClose }) {
+
+    const { createAccount } = useAccount()
+    const toast = useToast()
+
     const [profilePicture, setProfilePicture] = useState(defaultProfilePicture);
+    const [profilePictureFile, setProfilePictureFile] = useState(null);
     const [name, setName] = useState('');
     const [bio, setBio] = useState('');
+    const [hash, setHash] = useState('QmSx39LwFsnbgEYm6zqVF7Cu7ERfXn7j78Zb9kZu4hVciM')
 
     const handleProfilePictureChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setProfilePictureFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = reader.result;
-                console.log(base64String);  // Log the base64 string
-                setProfilePicture(base64String);  // Base64 string
+                setProfilePicture(base64String);
             };
             reader.readAsDataURL(file);
         }
@@ -40,28 +49,78 @@ export default function CreateAccountModal({ onClose }) {
         document.getElementById('profilePictureInput').click();
     };
 
-    const submitData = async () => {
+    const uploadToIpfs = async () => {
         try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
+            const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
+            const pinataApiKey = process.env.NEXT_PUBLIC_PINATA_API_KEY;
+            const pinataSecretApiKey = process.env.NEXT_PUBLIC_PINATA_API_SECRET
+
+            const formData = new FormData();
+            formData.append('file', profilePictureFile);
+
+            const response = await axios.post(url, formData, {
+                maxContentLength: 'Infinity',
                 headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ base64Image: profilePicture }),
+                    'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+                    'pinata_api_key': pinataApiKey,
+                    'pinata_secret_api_key': pinataSecretApiKey,
+                }
             });
-            const data = await response.json();
-            console.log('IPFS Hash:', data.ipfsHash);
-            // Handle success
+
+            const ipfsHash = response.data.IpfsHash;
+            return ipfsHash
+
         } catch (error) {
-            console.error('Error submitting data:', error);
-            // Handle error
+            console.error('Error uploading file: ', error);
+            toast({
+                title: 'Error uploading file',
+                status: 'error',
+                duration: 5000,
+                isClosable: true
+            });
         }
+    }
+
+    const submitData = async () => {
+        if (profilePictureFile != null) {
+            const id = await uploadToIpfs()
+            setHash(id)
+        }
+        if (name === '' || bio === '') {
+            toast({
+                title: 'Please fill in all fields',
+                status: 'error',
+                duration: 5000,
+                isClosable: true
+            });
+            return
+        }
+        const account = await createAccount(name, bio, hash)
+        if (account) {
+            toast({
+                title: 'Account created successfully',
+                status: 'success',
+                duration: 5000,
+                isClosable: true
+            })
+            onClose()
+        } else {
+            toast({
+                title: 'Error creating account',
+                status: 'error',
+                duration: 5000,
+                isClosable: true
+            })
+        }
+        
     }
 
     return (
         <ModalOverlay>
             <ModalContent style={{ justifyContent: 'center' }}>
-                <ModalHeader style={{ textAlign: 'center', width: '100%' }}><div className='text-2xl'>Create Account</div></ModalHeader>
+                <ModalHeader style={{ textAlign: 'center', width: '100%' }}>
+                    <div className='text-2xl'>Create Account</div>
+                </ModalHeader>
                 <ModalBody>
                     <Flex justifyContent="center" marginTop="4" className='mb-8'>
                         <Box
@@ -87,8 +146,7 @@ export default function CreateAccountModal({ onClose }) {
                                 color="white"
                                 fontWeight="bold"
                             >
-                                <span className='mx-10 text-4xl'><MdOutlineFileUpload />
-                                </span>
+                                <span className='mx-10 text-4xl'><MdOutlineFileUpload /></span>
                             </Center>
                             <Input
                                 id="profilePictureInput"
