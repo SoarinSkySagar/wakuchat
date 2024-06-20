@@ -13,6 +13,7 @@ export function AccountProvider({children}) {
     const [web3, setWeb3] = useState(null);
     const [contract, setContract] = useState(null);
     const [connectedAccount, setConnectedAccount] = useState(null);
+    const [wakuAccount, setWakuAccount] = useState(null)
 
     useEffect(() => {
         async function initializeWeb3() {
@@ -85,8 +86,15 @@ export function AccountProvider({children}) {
     async function getAccount(id) {
         try {
             if (contract && connectedAccount) {
-                const account = await contract.methods.getAccount(id).call()
-                return account
+                const res = await contract.methods.getAccount(id).call()
+                setWakuAccount({
+                    id: res.id,
+                    name: res.name,
+                    bio: res.bio,
+                    image: res.image
+                })
+                console.log(wakuAccount)
+                return res
             } else {
                 return null
             }
@@ -125,6 +133,7 @@ export function AccountProvider({children}) {
         try {
             if (contract && connectedAccount) {
                 const account = await contract.methods.getMyAccount().call()
+                console.log(account)
                 return account
             } else {
                 return null
@@ -135,7 +144,7 @@ export function AccountProvider({children}) {
     }
 
     return (
-        <AccountContext.Provider value={{web3, contract, connectedAccount, connectMetamask, createAccount, accountExists, getAccount, updateAccount, deleteAccount, getMyAccount}}>
+        <AccountContext.Provider value={{web3, contract, connectedAccount, wakuAccount, connectMetamask, createAccount, accountExists, getAccount, updateAccount, deleteAccount, getMyAccount}}>
             {children}
         </AccountContext.Provider>
     )
