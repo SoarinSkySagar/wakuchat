@@ -31,11 +31,13 @@ export default function CreateAccountModal({ onClose }) {
     const [name, setName] = useState('');
     const [bio, setBio] = useState('');
     const [hash, setHash] = useState('QmSx39LwFsnbgEYm6zqVF7Cu7ERfXn7j78Zb9kZu4hVciM')
+    const [imgChanged, setImgChanged] = useState(false)
 
     const handleProfilePictureChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setProfilePictureFile(file);
+            setImgChanged
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = reader.result;
@@ -68,6 +70,7 @@ export default function CreateAccountModal({ onClose }) {
             });
 
             const ipfsHash = response.data.IpfsHash;
+            setHash(ipfsHash)
             return ipfsHash
 
         } catch (error) {
