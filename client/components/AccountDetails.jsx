@@ -43,15 +43,12 @@ export default function AccountDetails() {
                             />
                         </div>
                     </div>
-                    {/* Account Name */}
                     <div className="text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">
                         {account.name}
                     </div>
-                    {/* Account ID */}
                     <div className="text-center text-xl sm:text-2xl md:text-3xl lg:text-4xl text-gray-400">
                         {account.id}
                     </div>
-                    {/* Bio */}
                     <div className="text-center text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-300">
                         {account.bio}
                     </div>
